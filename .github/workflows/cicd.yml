@@ -37,7 +37,7 @@ jobs:
 
         - name: Add EC2 to Known Host
           run: |
-            ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+            ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
 
         - name: Deploy to EC2
           run: |
