@@ -44,6 +44,9 @@ jobs:
             ssh $EC2_USER@$EC2_HOST << 'EOF'
                 echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
                 docker pull $IMAGE_NAME:latest
+                docker stop mongodb-container || true
+                docker rm mongodb-container || true
+                docker run --name mongodb-container -d -p 27017:27017 mongo
                 docker stop menucard-container || true
                 docker rm menucard-container || true
                 docker run -d --name menucard-container -p 80:8080 chikadev/menucard:latest
