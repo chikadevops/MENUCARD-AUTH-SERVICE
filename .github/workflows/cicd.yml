@@ -1,0 +1,54 @@
+name: EC2 Deploy
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        env:
+            EC2_HOST: 184.72.92.219
+            EC2_USER: ubuntu
+            IMAGE_NAME: chikadev/menucard
+
+        steps:
+        - name: Checkout Code
+          uses: actions/checkout@v2
+
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v2
+
+        - name: Login to DockerHub
+          run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+        - name: Build and Push Docker Image
+          run: |
+            docker build -t $IMAGE_NAME:latest .
+            docker push $IMAGE_NAME:latest
+
+        - name: Setup SSH Key
+          run: |
+            mkdir -p ~/.ssh
+            echo "${{ secrets.MY_EC2_KEYS }}" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+
+        - name: Add EC2 to Known Host
+          run: |
+            ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+        - name: Deploy to EC2
+          run: |
+            ssh $EC2_USER@EC2_HOST << 'EOF'
+                echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+                docker pull $IMAGE_NAME:latest
+                docker stop menucard-container || true
+                docker rm menucard-container || true
+                docker run -d --name menucard-container -p 80:8080 chikadev/menucard:latest
+            EOF
+
+        - name: Pull Docker Image and Run Container
+          run: echo "Deployment completed successfully."
+
