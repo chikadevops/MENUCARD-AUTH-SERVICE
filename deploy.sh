@@ -1,7 +1,5 @@
 #! /bin/bash
 
-cd MENUCARD-AUTH-SERVICE
-
 # Install Dependencies
 npm ci
 
