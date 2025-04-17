@@ -1,12 +1,11 @@
 #! /bin/bash
 
-# Clone or update repo
-if [ -d "MENUCARD-AUTH-SERVICE" ]; then
-    cd MENUCARD-AUTH-SERVICE && git pull
-else
-    git clone https://github.com/chikadevops/MENUCARD-AUTH-SERVICE.git
-    cd MENUCARD-AUTH-SERVICE
-fi
+cd MENUCARD-AUTH-SERVICE
+
+> menucard@1.0.0 dev
+> cross-env NODE_ENV=development nodemon index.js
+
+sh: 1: cross-env: not found
 
 # Install Dependencies
 npm ci
