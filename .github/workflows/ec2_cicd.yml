@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      EC2_HOST: 54.196.105.239
+      EC2_HOST: 3.92.244.41
 
     steps:
     - name: Checkout Code
