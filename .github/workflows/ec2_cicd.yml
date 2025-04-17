@@ -1,46 +1,51 @@
 name: EC2 Deploy
 
 on:
-    push:
-        branches:
-            - main
+  push:
+    branches:
+      - main
 
 jobs:
-    deploy:
-        runs-on: ububtu-latest
+  deploy:
+    runs-on: ubuntu-latest
 
-        env:
-            EC2_HOST: 54.196.105.239
+    env:
+      EC2_HOST: 54.196.105.239
 
-        steps:
-        - name: Checkout Code
-          uses: actions/checkout@v2
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
 
-        - name: Setup SSH Key
-          run: |
-            mkdir -p ~/.ssh
-            echo "${{ secrets.MY_EC2_KEYS }}" > ~/.ssh/id_rsa
-            chmod 600 ~/.ssh/id_rsa
+    - name: Setup SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.MY_EC2_KEYS }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
 
-        - name: Add EC2 to Known Host
-          run: |
-            ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
-  
-        - name: Clone GitHub Repo
-          run: git clone https://github.com/chikadevops/MENUCARD-AUTH-SERVICE.git
+    - name: Add EC2 to Known Hosts
+      run: |
+        ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
 
-        - name: Setup .env File
-          run: |
-            echo "${{ secrets.ENV }}" > MENUCARD-AUTH-SERVICE/.env
+    - name: Deploy, Setup and Run App on EC2
+      run: |
+        ssh ubuntu@$EC2_HOST << 'EOF'
+          # Clone or update repo
+          if [ -d "MENUCARD-AUTH-SERVICE" ]; then
+            cd MENUCARD-AUTH-SERVICE && git pull
+          else
+            git clone https://github.com/chikadevops/MENUCARD-AUTH-SERVICE.git
+            cd MENUCARD-AUTH-SERVICE
+          fi
 
-        - name: Install Dependencies
-          run: npm ci
+          # Setup .env file
+          echo "${{ secrets.ENV }}" > .env
 
-        - name: Install Jest
-          run: npm install --save-dev jest
-        
-        - name: Run Tests
-          run: npm test
+          # Install dependencies
+          npm ci
 
-        - name: Run App
-          run: npm run dev
+          # Run tests
+          npm test
+
+          # Run the app (you might want pm2 here later — but this is fine for now)
+          npm run dev &
+        EOF
