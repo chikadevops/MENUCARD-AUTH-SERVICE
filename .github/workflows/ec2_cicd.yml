@@ -36,7 +36,7 @@ jobs:
                 else
                     git clone https://github.com/chikadevops/MENUCARD-AUTH-SERVICE.git
                 fi
-            cd MENUCARD-AUTH-SERVICE
+            cd ~/MENUCARD-AUTH-SERVICE
             chmod +x deploy.sh
             ./deploy.sh
         EOF
