@@ -10,4 +10,8 @@ npm install --save-dev jest
 npm test
 
 # Run App
-timeout --foreground 60s npm run dev || echo "Stopped dev server after timeout"
+npm run dev &
+DEV_PID=$!
+sleep 30
+kill -SIGINT $DEV_PID
+echo "Stopped dev server after timeouts"
